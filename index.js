@@ -78,21 +78,31 @@ app.post("/bfhl", async (req, res) => {
     }
 
     if (body.AI !== undefined) {
-      const aiRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
+  const aiRes = await axios.post(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
+    {
+      contents: [
         {
-          contents: [{ parts: [{ text: body.AI }] }]
+          parts: [{ text: body.AI }]
         }
-      );
-
-      const answer = aiRes.data.candidates[0].content.parts[0].text.split(" ")[0];
-
-      return res.json({
-        is_success: true,
-        official_email: EMAIL,
-        data: answer
-      });
+      ]
     }
+  );
+
+  const text =
+    aiRes?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+  const answer = text
+    ? text.trim().split(/\s+/)[0]
+    : "Unknown";
+
+  return res.json({
+    is_success: true,
+    official_email: EMAIL,
+    data: answer
+  });
+}
+
 
     res.status(400).json({ is_success: false });
 
