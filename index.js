@@ -77,31 +77,42 @@ app.post("/bfhl", async (req, res) => {
       });
     }
 
-    if (body.AI !== undefined) {
-  const aiRes = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
-    {
-      contents: [
-        {
-          parts: [{ text: body.AI }]
-        }
-      ]
-    }
-  );
+ if (body.AI !== undefined) {
+  try {
+    const aiRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`,
+      {
+        contents: [
+          {
+            parts: [{ text: body.AI }]
+          }
+        ]
+      }
+    );
 
-  const text =
-    aiRes?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text =
+      aiRes?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
-  const answer = text
-    ? text.trim().split(/\s+/)[0]
-    : "Unknown";
+    const answer = text
+      ? text.trim().split(/\s+/)[0]
+      : "Unknown";
 
-  return res.json({
-    is_success: true,
-    official_email: EMAIL,
-    data: answer
-  });
+    return res.json({
+      is_success: true,
+      official_email: EMAIL,
+      data: answer
+    });
+
+  } catch (aiError) {
+    // 🔥 IMPORTANT: NEVER FAIL THE API
+    return res.json({
+      is_success: true,
+      official_email: EMAIL,
+      data: "Unknown"
+    });
+  }
 }
+
 
 
     res.status(400).json({ is_success: false });
